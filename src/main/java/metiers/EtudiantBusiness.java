@@ -9,57 +9,71 @@ import java.util.List;
 
 public class EtudiantBusiness {
     private static List<Etudiant> etudiants;
-    private OptionBusiness optionBusiness = new OptionBusiness();
+    private static OptionBusiness optionBusiness = new OptionBusiness();
 
     public EtudiantBusiness() {
-        etudiants = new ArrayList<Etudiant>();
-        // Initialisation avec quelques données de test
-        etudiants.add(new Etudiant("I001", "Doe", "Jean", optionBusiness.getOptionByCode(1), 2023, "jean.doe@example.com"));
-        etudiants.add(new Etudiant("I002", "Smith", "Alice", optionBusiness.getOptionByCode(1), 2022, "alice.smith@example.com"));
-        etudiants.add(new Etudiant("I003", "Durand", "Pierre", optionBusiness.getOptionByCode(2), 2023, "pierre.durand@example.com"));
+        if (etudiants == null) {
+            etudiants = new ArrayList<Etudiant>();
+            etudiants.add(new Etudiant("I001", "Doe", "Jean",
+                    optionBusiness.getOptionByCode(1), 2023, "jean.doe@example.com"));
+            etudiants.add(new Etudiant("I002", "Smith", "Alice",
+                    optionBusiness.getOptionByCode(1), 2022, "alice.smith@example.com"));
+            etudiants.add(new Etudiant("I003", "Durand", "Pierre",
+                    optionBusiness.getOptionByCode(2), 2023, "pierre.durand@example.com"));
+        }
     }
 
-    // Ajouter un etudiant
+    // Ajouter un étudiant
     public boolean addEtudiant(Etudiant etudiant) {
+        if (etudiant == null || etudiant.getOption() == null) return false;
         int codeOption = etudiant.getOption().getCodeOption();
         Option option = optionBusiness.getOptionByCode(codeOption);
-        if (option != null) {
-            etudiant.setOption(option);
-            return etudiants.add(etudiant);
-        }
-        return false;
+        if (option == null) return false;
+        etudiant.setOption(option);
+        if (getEtudiantByIdentifiant(etudiant.getIdentifiant()) != null) return false;
+        return etudiants.add(etudiant);
     }
 
-    // Récupérer un etudiant par son identifiant
+    // Récupérer un étudiant par identifiant
     public Etudiant getEtudiantByIdentifiant(String identifiant) {
         for (Etudiant e : etudiants) {
-            if (e.getIdentifiant().equals(identifiant)) {
-                return e;
-            }
+            if (e.getIdentifiant().equals(identifiant)) return e;
         }
         return null;
     }
 
-    // Récupérer les etudiants par option
-    public List<Etudiant> getEtudiantsByOption(Option option) {
+    // Récupérer tous les étudiants
+    public List<Etudiant> getAllEtudiants() {
+        return etudiants;
+    }
+
+    // Récupérer les étudiants par option (int codeOption)
+    public List<Etudiant> getEtudiantsByOption(int codeOption) {
         List<Etudiant> result = new ArrayList<>();
         for (Etudiant e : etudiants) {
-            if (e.getOption() != null && e.getOption().getCodeOption() == option.getCodeOption()) {
+            if (e.getOption() != null && e.getOption().getCodeOption() == codeOption) {
                 result.add(e);
             }
         }
         return result;
     }
 
-    // Récupérer tous les etudiants
-    public List<Etudiant> getAllEtudiants() {
-        return etudiants;
+    // Surcharge : par objet Option
+    public List<Etudiant> getEtudiantsByOption(Option option) {
+        if (option == null) return new ArrayList<>();
+        return getEtudiantsByOption(option.getCodeOption());
     }
 
-    // Mettre à jour un etudiant
+    // Mettre à jour un étudiant
     public boolean updateEtudiant(String identifiant, Etudiant updatedEtudiant) {
         for (int i = 0; i < etudiants.size(); i++) {
             if (etudiants.get(i).getIdentifiant().equals(identifiant)) {
+                // Re-lier l'option si nécessaire
+                if (updatedEtudiant.getOption() != null) {
+                    Option o = optionBusiness.getOptionByCode(
+                            updatedEtudiant.getOption().getCodeOption());
+                    if (o != null) updatedEtudiant.setOption(o);
+                }
                 etudiants.set(i, updatedEtudiant);
                 return true;
             }
@@ -67,7 +81,7 @@ public class EtudiantBusiness {
         return false;
     }
 
-    // Supprimer un etudiant
+    // Supprimer un étudiant
     public boolean deleteEtudiant(String identifiant) {
         Iterator<Etudiant> iterator = etudiants.iterator();
         while (iterator.hasNext()) {

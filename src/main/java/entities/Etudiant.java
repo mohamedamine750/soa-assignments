@@ -1,5 +1,6 @@
 package entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -53,6 +54,7 @@ public class Etudiant {
         return option;
     }
 
+    @JsonProperty("option")
     public void setOption(Option option) {
         this.option = option;
     }
